@@ -1,0 +1,246 @@
+{% load static %}
+{% load i18n %}
+{% load currency %}
+<!-- HEADER -->
+<header>
+    <!-- top Header -->
+    <div id="top-header">
+        <div class="container">
+            <div class="pull-left">
+                <span>{{ setting.sub_title }}</span>
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}" role="alert">
+                            {{ message |safe }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="pull-right">
+                <ul class="header-top-links">
+                    <li><a href="#">{% trans "Store" %}</a></li>
+                    <li><a href="#">{% trans "Newsletter" %}</a></li>
+                    <li><a href="{% url 'faq' %}">{% trans "FAQ" %}</a></li>
+                    <li class="dropdown default-dropdown">
+                        
+                        <form action="{% url 'selectLanguage' %}" method="post">{% csrf_token %}
+                            <input name="next" type="hidden" value="{{ redirect_to }}">
+                            <select name="language" onchange="submit()" >
+
+                                {% get_current_language as LANGUAGE_CODE %}
+                                {% get_available_languages as LANGUAGES %}
+                                {% get_language_info_list for LANGUAGES as languages %}
+                                {% for language in languages %}
+                                    <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
+                                        {{ language.name_local }} ({{ language.code }})
+                                    </option>
+                                {% endfor %}
+
+                            </select>
+                            <noscript>
+                                <input type="submit" value="Set" />
+                            </noscript>
+                        </form>
+                       
+                    </li>
+                    <li class="dropdown default-dropdown">
+                        <form id="currency_switcher" method="POST" action="{% url 'selectcurrency' %}">
+                            {% csrf_token %}
+                            <select name="currency" onchange="submit()" >
+                                {% for curr in CURRENCIES %}
+                                    <option value="{{ curr.code }}" {% ifequal curr.code request.session.currency %}selected="selected"{% endifequal %}>
+                                        {{ curr.symbol }} {{ curr.code }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+
+                            <noscript>
+                                <input type="submit" value="Set" />
+                            </noscript>
+
+                        </form>
+                    </li>
+
+                    <li class="dropdown default-dropdown">
+                        <form id="currency_switcher" method="POST" action="{% url 'savelangcur' %}">
+                            {% csrf_token %}
+                            <input type="submit" value="Save" />
+                        </form>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /top Header -->
+
+    <!-- header -->
+    <div id="header">
+        <div class="container">
+            <div class="pull-left">
+                <!-- Logo -->
+                <div class="header-logo">
+                    <a class="logo" href="/">
+                        <img src="{% static '' %}img/logo.png" alt="">
+                    </a>
+                </div>
+                <!-- /Logo -->
+                
+                <!-- Autocomplete query for search -->
+                <script>
+                    $(function() {
+                        $("#query").autocomplete({
+                            source: "/search_auto/",
+                            select: function (event, ui) { //item selected
+                                AutoCompleteSelectHandler(event, ui)
+                            },
+                            minLength: 2,
+                        });
+                    });
+                    function AutoCompleteSelectHandler(event, ui)
+                    {
+                        var selectedObj = ui.item;
+                    }
+                </script>
+
+                <!-- Search -->
+                <div class="header-search">
+                    <form action="/search/" method="post">
+                        {% csrf_token %}
+                        <input id="query" name="query" class="input search-input" type="text" placeholder="Enter your keyword">
+                        <select name="catid" class="input search-categories">
+                            <option value="0">{% trans "All Categories" %}</option>
+                            {% load mptt_tags %}
+
+                            {% recursetree category %}
+                                {% if node.is_leaf_node %}
+                                    <option value="{{ rs.id }}">{{ node.title }}</option>
+                                {% endif %}
+                                {% if not node.is_leaf_node %}
+                                    <optgroup label="{{ node.title }}">
+                                        {{ children }}
+                                    </optgroup>
+                                {% endif %}
+                            {% endrecursetree %}
+                            <option value="1">Category 01</option>
+                            <option value="1">Category 02</option>
+                        </select>
+                        <button class="search-btn"><i class="fa fa-search"></i></button>
+                    </form>
+                </div>
+                <!-- /Search -->
+            </div>
+            <div class="pull-right">
+                <ul class="header-btns">
+                    <!-- Account -->
+                    <li class="header-account dropdown default-dropdown">
+                        {% if user.id is not None %}
+                            {% csrf_token %}
+                            <div class="dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="true">
+                                <div class="header-btns-icon">
+                                    <img src="{{ request.session.userimage }}" style="height: 39px; width: 42px; border-radius: 30%; position: relative;">
+                                </div>
+                                <strong class="text-uppercase">{{ user.first_name }} {{ user.last_name }} <i class="fa fa-caret-down"></i></strong>
+                            </div>
+                        {% else %}
+                            <div class="dropdown-toggle" role="button" data-toggle="dropdown" aria-expanded="true">
+                                <div class="header-btns-icon">
+                                    <i class="fa fa-user-o"></i>
+                                </div>
+                                <strong class="text-uppercase">My Account <i class="fa fa-caret-down"></i></strong>
+                            </div>
+                            <a href="/login" class="text-uppercase">Login</a> / <a href="/signup" class="text-uppercase">Join</a>
+                        {% endif %}
+                        {% if user.id is not None %}
+                            <ul class="custom-menu">
+                                <li><a href="/user"><i class="fa fa-user-o"></i> {% trans "My Account" %}</a></li>
+                                <li><a href="/user/wishlist"><i class="fa fa-heart-o"></i> {% trans "My Wishlist" %}</a></li>
+                                <li><a href="/user/compare"><i class="fa fa-exchange"></i> {% trans "Compare" %}</a></li>
+                                <li><a href="order/orderproduct"><i class="fa fa-check"></i> {% trans "Checkout" %}</a></li>
+                                <li><a href="/logout"><i class="fa fa-unlock-alt"></i> {% trans "Log out" %}</a></li>
+                            </ul>
+                        {% else %}
+                            <ul class="custom-menu">
+                                <li><a href="/login"><i class="fa fa-user-o"></i> {% trans "My Account" %}</a></li>
+                                <li><a href="/login"><i class="fa fa-heart-o"></i> {% trans "My Wishlist" %}</a></li>
+                                <li><a href="/login"><i class="fa fa-exchange"></i> {% trans "Compare" %}</a></li>
+                                <li><a href="/login"><i class="fa fa-check"></i> {% trans "Checkout" %}</a></li>
+                                <li><a href="/login"><i class="fa fa-unlock-alt"></i> {% trans "Login" %}</a></li>
+                                <li><a href="/signup"><i class="fa fa-user-plus"></i> {% trans "Create An Account" %}</a></li>
+                            </ul>
+                        {% endif %}
+                    </li>
+                    <!-- /Account -->
+
+                    <!-- Cart -->
+                    <li class="header-cart dropdown default-dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                            <div class="header-btns-icon">
+                                <i class="fa fa-shopping-cart"></i>
+                                <span class="qty">{{ total_products }}</span>
+                            </div>
+                            <strong class="text-uppercase">{% trans "My Cart:" %}</strong>
+                            <br>
+                            {% if user.id is not None %}
+                                <span>{{ total|currency:request.session.currency }} {{ request.session.currency }}</span>
+                            {% else %}
+                                <span></span>
+                            {% endif %}
+                        </a>
+                        <div class="custom-menu">
+                            <div id="shopping-cart">
+                                <div class="shopping-cart-list">
+                                    {% if shopcart is not Null %}
+                                        {% for rs in shopcart %}
+                                            <div class="product product-widget">
+                                                <div class="product-thumb">
+                                                    {% if rs.variant.image_id  > 0 %}
+                                                        <img src="{{rs.variant.image }}" alt="">
+                                                    {% else %}
+                                                        <img src="{{rs.product.image.url}}" alt="">
+                                                    {% endif %}
+                                                </div>
+                                                <div class="product-body">
+                                                    <h3 class="product-price">
+                                                        {% if rs.variant is not None %}
+                                                            {{ rs.variant.price|currency:request.session.currency }}
+                                                        {% else %}
+                                                            {{ rs.price|currency:request.session.currency }}
+                                                        {% endif %}
+                                                        <span class="qty">x{{ rs.quantity }}</span></h3>
+                                                    <h2 class="product-name"><a href="/product/{{ rs.product.id }}/{{ rs.product.slug}}">Product Name Goes Here</a></h2>
+                                                </div>
+                                                    <a href="/order/deletefromcart/{{ rs.id }}" onclick="return confirm('Delete ! Are you sure?')" class="cancel-btn"><i class="fa fa-trash"></i></a>
+                                                </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="product product-widget"></div>
+                                            <div class="product-thumb">
+                                                <img src="{% static '' %}img/shopping-cart-logo.jpg" alt="" style="height: 150px;">
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                            </div>
+                                <div class="shopping-cart-btns">
+                                    <a href='{% url "shopcart" %}' class="main-btn">{% trans "View Cart" %}</a>
+                                    <a href="" class="primary-btn">{% trans "Checkout" %} <i class="fa fa-arrow-circle-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <!-- /Cart -->
+
+                    <!-- Mobile nav toggle-->
+                    <li class="nav-toggle">
+                        <button class="nav-toggle-btn main-btn icon-btn"><i class="fa fa-bars"></i></button>
+                    </li>
+                    <!-- / Mobile nav toggle -->
+                </ul>
+            </div>
+        </div>
+        <!-- header -->
+    </div>
+    <!-- container -->
+</header>
+<!-- /HEADER -->

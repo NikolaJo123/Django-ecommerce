@@ -1,0 +1,27 @@
+
+{% extends 'homebase.html' %}
+
+{% block title %} {{ setting.title }} {% endblock %}
+{% block favicon %} {% endblock %}
+{% block description %} {{ setting.description }} {% endblock %}
+{% block keywords %} {{ setting.keywords }} {% endblock %}
+
+{% block sidebar %} {% include 'sidebar.html' %} {% endblock %}
+{% block slider %} {% include 'slider.html' %} {% endblock %}
+{% block body %} {% include 'content.html' %}  {% endblock %}
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+</head>
+<body>
+    <h1>Hello World!</h1>
+    <br>
+    <p>Welcome to Django FrameWork...</p>
+    <p>University : {{university}}</p>
+    <p>Department : {{department}}</p>
+</body>
+</html> -->

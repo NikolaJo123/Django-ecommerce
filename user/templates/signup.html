@@ -1,0 +1,64 @@
+{% extends 'signupbase.html' %}
+
+
+{% load static %}
+
+{% block body %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{message.tags}}" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<section class="ftco-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="header-logo">
+                <a class="logo" href="/">
+                    <img src="{% static '' %}img/logo.png" alt="">
+                </a>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-7 col-lg-5">
+                <div class="login-wrap p-4 p-md-5">
+                    <div class="icon d-flex align-items-center justify-content-center">
+                        <span class="fa fa-user-o"></span>
+                    </div>
+                    <h3 class="text-center mb-4">Sign Up</h3>
+                    <form action="" method="post" class="login-form">
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                            
+                            <div class="form-group">
+                                
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small style="color: grey">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% for error in field.erorrs %}
+                                    <p style="color: red">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="form-group">
+                            <button type="submit" class="form-control btn btn-primary rounded submit px-3">Sign Up</button>
+                        </div>
+                        <div class="form-group d-md-flex">
+                           
+                        </div>
+                        <div class="" style="text-align: center;">
+                            <a href="/login">Already have an Account!</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
